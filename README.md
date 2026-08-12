@@ -50,8 +50,8 @@ Pastikan komputer Anda sudah terinstall **Node.js** (v16 atau versi lebih baru) 
 
 ### 2. Kloning Repositori
 ```bash
-git clone https://github.com/ilham101106/118_OpenAI.git
-cd 118_OpenAI
+git clone https://github.com/ilham101106/118_ChatboxAI.git
+cd 118_ChatboxAI
 ```
 
 ### 3. Install Dependensi
@@ -87,7 +87,7 @@ http://localhost:3000
 ## 📁 Struktur Direktori Projek
 
 ```
-118_OpenAI/
+118_ChatboxAI/
 ├── package.json
 ├── server.js
 ├── .env.example
