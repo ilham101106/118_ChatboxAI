@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Express AI Chatbox - Liquid LFM 2.5</title>
+  
+  <!-- SEO & Favicon -->
+  <meta name="description" content="Aplikasi Chatbot AI berbasis Express.js menggunakan model liquid/lfm-2.5-2.6b:free dari OpenRouter.">
+  
+  <!-- Google Fonts: Outfit & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Highlight.js CSS for Code Highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container" id="appContainer">
+    
+    <!-- Sidebar / Drawer Panel (Dapat Disembunyikan / Toggle Desktop & Mobile) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon">
+            <i class="fa-solid fa-droplet"></i>
+          </div>
+          <div class="brand-text">
+            <h2>Liquid Express</h2>
+            <span class="badge">AI Chatbot</span>
+          </div>
+        </div>
+        <button class="btn-icon hide-sidebar-btn" id="closeSidebarBtn" title="Sembunyikan Sidebar">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+        
+        <!-- API Key Configuration Card (Opsi 2) -->
+        <div class="config-card">
+          <div class="config-title">
+            <i class="fa-solid fa-key"></i>
+            <span>OpenRouter API Key</span>
+            <span class="status-indicator" id="apiKeyStatusDot"></span>
+          </div>
+          <p class="config-desc">API Key disimpan secara aman di <em>Local Storage</em> browser Anda.</p>
+
+          <div class="input-group">
+            <div class="password-wrapper">
+              <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." autocomplete="off">
+              <button class="btn-toggle-eye" id="toggleApiKeyVisibility" title="Lihat/Sembunyikan Key">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <button class="btn btn-primary" id="saveApiKeyBtn">
+              <i class="fa-solid fa-floppy-disk"></i> Simpan Key
+            </button>
+          </div>
+
+          <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" class="link-external">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Dapatkan API Key Gratis di OpenRouter
+          </a>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="config-card">
+          <div class="config-title">
+            <i class="fa-solid fa-microchip"></i>
+            <span>Model AI</span>
+          </div>
+          <div class="select-wrapper">
+            <select id="modelSelect">
+              <option value="liquid/lfm-2.5-2.6b:free" selected>Liquid LFM 2.5 2.6B (Free)</option>
+              <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (Free)</option>
+              <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Free)</option>
+              <option value="deepseek/deepseek-r1:free">DeepSeek R1 (Free)</option>
+              <option value="qwen/qwen-2.5-coder-32b-instruct:free">Qwen 2.5 Coder 32B (Free)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- System Prompt Setting -->
+        <div class="config-card">
+          <div class="config-title">
+            <i class="fa-solid fa-sliders"></i>
+            <span>System Prompt</span>
+          </div>
+          <textarea id="systemPromptInput" rows="3" placeholder="Atur karakter AI... (Contoh: Kamu adalah asisten pemrograman yang ramah dan membantu.)">Kamu adalah Liquid AI, asisten virtual yang cerdas, ramah, dan sangat membantu dalam bahasa Indonesia.</textarea>
+          <button class="btn btn-secondary btn-sm" id="resetSystemPromptBtn">
+            <i class="fa-solid fa-rotate-left"></i> Reset Prompt
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <div class="sidebar-actions">
+          <button class="btn btn-danger w-100" id="clearChatBtn">
+            <i class="fa-solid fa-trash-can"></i> Hapus Percakapan
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Footer Info -->
+      <div class="sidebar-footer">
+        <p><i class="fa-solid fa-server"></i> Express.js + OpenRouter API</p>
+        <span class="version">v1.0.0</span>
+      </div>
+    </aside>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Chat Workspace -->
+    <main class="chat-main">
+      
+      <!-- Top Navigation Bar -->
+      <header class="chat-header">
+        <div class="chat-header-left">
+          <button class="btn btn-secondary btn-sm toggle-sidebar-btn" id="toggleSidebarBtn" title="Buka / Sembunyikan Panel Pengaturan">
+            <i class="fa-solid fa-gear"></i>
+            <span>Pengaturan</span>
+          </button>
+
+          <div class="model-badge">
+            <span class="pulse-dot"></span>
+            <span id="activeModelLabel">liquid/lfm-2.5-2.6b:free</span>
+          </div>
+        </div>
+        
+        <div class="chat-header-right">
+          <div class="api-key-pill" id="apiKeyPill">
+            <i class="fa-solid fa-key"></i>
+            <span id="apiKeyPillText">API Key Belum Diatur</span>
+          </div>
+          <button class="btn-icon" id="quickClearBtn" title="Kosongkan Chat">
+            <i class="fa-solid fa-broom"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Warning Banner if API key missing -->
+      <div class="banner-warning" id="apiKeyBanner">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>API Key belum dimasukkan. Silakan masukkan OpenRouter API Key Anda di Pengaturan untuk memulai chat.</span>
+        <button class="btn btn-sm btn-outline-light" id="openSettingsFromBanner">
+          <i class="fa-solid fa-gear"></i> Buka Pengaturan
+        </button>
+      </div>
+
+      <!-- Messages Scroll Area -->
+      <div class="chat-body" id="chatBody">
+        
+        <!-- Welcome Hero Card (Diperlihatkan jika chat belum ada) -->
+        <div class="welcome-hero" id="welcomeHero">
+          <div class="welcome-icon">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <h1>Selamat Datang di Express AI Chatbox</h1>
+          <p>Didukung oleh model <strong>Liquid LFM 2.5 2.6B Free</strong> via OpenRouter API.</p>
+
+          <div class="suggestions-grid">
+            <button class="suggestion-card" data-prompt="Jelaskan apa itu Express.js secara singkat dan berikan contoh kode sederhana.">
+              <i class="fa-solid fa-code"></i>
+              <span>Contoh Express.js</span>
+            </button>
+            <button class="suggestion-card" data-prompt="Buatkan fungsi JavaScript untuk memfilter array angka genap.">
+              <i class="fa-solid fa-laptop-code"></i>
+              <span>Fungsi JavaScript</span>
+            </button>
+            <button class="suggestion-card" data-prompt="Apa saja keunggulan model Liquid LFM 2.5?">
+              <i class="fa-solid fa-lightbulb"></i>
+              <span>Tentang Liquid LFM</span>
+            </button>
+            <button class="suggestion-card" data-prompt="Buatkan contoh puisi singkat tentang teknologi dan kecerdasan buatan.">
+              <i class="fa-solid fa-pen-nib"></i>
+              <span>Puisi Teknologi</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Messages container -->
+        <div class="messages-container" id="messagesContainer"></div>
+
+        <!-- Typing Indicator Loader -->
+        <div class="typing-indicator" id="typingIndicator">
+          <div class="avatar ai-avatar">
+            <i class="fa-solid fa-droplet"></i>
+          </div>
+          <div class="typing-bubble">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Chat Input Controls -->
+      <footer class="chat-footer">
+        <form class="chat-form" id="chatForm">
+          <div class="input-container">
+            <textarea 
+              id="userPromptInput" 
+              placeholder="Tulis pesan Anda di sini... (Tekan Enter untuk mengirim, Shift+Enter untuk baris baru)" 
+              rows="1" 
+              required
+            ></textarea>
+            <button type="submit" class="send-btn" id="sendBtn" title="Kirim Pesan">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </form>
+        <div class="footer-note">
+          <span>AI dapat membuat kesalahan. Periksa kembali informasi penting.</span>
+        </div>
+      </footer>
+
+    </main>
+  </div>
+
+  <!-- External Libraries: Marked.js for Markdown & Highlight.js for Syntax Highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  
+  <!-- Custom Client Script -->
+  <script src="app.js"></script>
+</body>
+</html>
