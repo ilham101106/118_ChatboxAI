@@ -1,5 +1,12 @@
 # Express AI Chatbox - Liquid LFM 2.5 (`liquid/lfm-2.5-2.6b:free`)
 
+### 👤 Identitas Pembuat
+- **Nama**: Ilham Saputra
+- **NIM**: 20240140118
+- **Praktikum**: Pengembangan Web Service (Praktikum 10)
+
+---
+
 Aplikasi Web Chatbot AI modern berbasis **Node.js & Express.js** yang mengintegrasikan model kecerdasan buatan **Liquid LFM 2.5 2.6B Free** (`liquid/lfm-2.5-2.6b:free`) menggunakan **OpenRouter API**.
 
 Projek ini dilengkapi antarmuka pengguna (*User Interface*) bergaya **Glassmorphism Dark Mode**, dukungan Markdown rendering, *code syntax highlighting* dengan tombol salin kode, serta fitur penyembunyian panel pengaturan (*collapsible settings drawer*).
